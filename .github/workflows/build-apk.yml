@@ -31,6 +31,31 @@ jobs:
           mkdir build-project
           unzip -q ObjectifsMensuels_v1.zip -d build-project
 
+            - name: Corriger les cibles JVM
+        working-directory: build-project
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("app/build.gradle.kts")
+          s = p.read_text()
+          s = s.replace(
+              'android { namespace = "fr.objectifs.mensuels"; compileSdk = 35',
+              '''android {
+              namespace = "fr.objectifs.mensuels"
+              compileSdk = 35
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = "17"
+              }'''
+          )
+          p.write_text(s)
+          PY
+
       - name: Compiler l'APK
         working-directory: build-project
         run: gradle assembleDebug --no-daemon
